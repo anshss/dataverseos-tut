@@ -1,3 +1,4 @@
+// similar to page.tsx
 "use client";
 import {
     DataverseConnector,
@@ -7,9 +8,11 @@ import {
 import React, { useState } from "react";
 
 export default function Home() {
+    const [conditionAddress, setConditionAddress] = useState();
     const [pkh, setPkh] = useState("");
     const [inputs, setInputs] = useState({
         text: "",
+        updateText: "",
         fileId: "",
     });
 
@@ -22,7 +25,7 @@ export default function Home() {
     const login = async () => {
         await createCapability();
     };
-
+    
     const createCapability = async () => {
         await dataverseConnector.connectWallet();
         const pkh = await dataverseConnector.runOS({
@@ -63,6 +66,7 @@ export default function Home() {
                 },
             },
         });
+        // console.log("file id:", res.fileContent.file.contentId);
         setFileId(res.fileContent.file.contentId);
         setLoading(false);
     };
@@ -77,6 +81,34 @@ export default function Home() {
         console.log("fetched", res.fileContent.content.text);
 
         console.log(res);
+    };
+
+    const updateWithDataverse = async () => {
+        const encrypted = JSON.stringify({
+            text: false,
+            images: false,
+            videos: false,
+        });
+
+        await dataverseConnector.connectWallet();
+        const res = await dataverseConnector.runOS({
+            method: SYSTEM_CALL.updateIndexFile,
+            params: {
+                fileId: inputs.fileId,
+                fileName: "test",
+                fileContent: {
+                    modelVersion: "0",
+                    text: inputs.text,
+                    images: [],
+                    videos: [],
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    encrypted,
+                },
+            },
+        });
+        console.log("file id:", res);
+        setFileId(res.fileContent.file.contentId);
     };
 
     return (
@@ -101,19 +133,37 @@ export default function Home() {
                 {loading ? <p>Loading..</p> : <p>file id: {fileId}</p>}
             </div>
             <div className=" mb-4">
-                <div>
-                    <p>Load File</p>
-                    <input
-                        type="text"
-                        className="text-black"
-                        placeholder="file id"
-                        onChange={(e) =>
-                            setInputs({ ...inputs, fileId: e.target.value })
-                        }
-                    />
-                    <button onClick={loadWithDataverse}>Load</button>
-                    <p>data: {fetchedData}</p>
-                </div>
+                <p>Update File</p>
+                <input
+                    type="text"
+                    className="text-black"
+                    placeholder="file id"
+                    onChange={(e) =>
+                        setInputs({ ...inputs, fileId: e.target.value })
+                    }
+                />
+                <input
+                    type="text"
+                    className="text-black"
+                    placeholder="inputs"
+                    onChange={(e) =>
+                        setInputs({ ...inputs, updateText: e.target.value })
+                    }
+                />
+                <button onClick={updateWithDataverse}>Update</button>
+                <p>file id: {fileId}</p>
+            </div>
+            <div className=" mb-4">
+                <p>Load File</p>
+                <input
+                    type="text"
+                    className="text-black"
+                    onChange={(e) =>
+                        setInputs({ ...inputs, fileId: e.target.value })
+                    }
+                />
+                <button onClick={loadWithDataverse}>Load</button>
+                <p>data: {fetchedData}</p>
             </div>
         </div>
     );
