@@ -1,5 +1,11 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+/dataverseos/node_modules
+/dataverseos/.pnpm-store
+/.pnpm-bin
+/.pnpm-glob
+/.pnpm-store
+
 # dependencies
 /node_modules
 /.pnp
